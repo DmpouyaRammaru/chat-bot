@@ -254,7 +254,7 @@ export default function ChatInterface() {
             {/* フッター（画面最下部に固定） */}
             <form onSubmit={handleSubmit} className="fixed bottom-0 inset-x-0 z-30 bg-white border-t p-4">
               <div className="max-w-[100vw] px-2 sm:px-4 lg:px-6 mx-auto">
-                <div className="flex space-x-2">
+                <div className="flex items-end space-x-2">
                   <textarea
                     value={input}
                     onChange={(e) => {
@@ -275,13 +275,13 @@ export default function ChatInterface() {
                         : '何でもお聞きください...'
                     }
                     rows={1}
-                    className="flex-1 border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none max-h-40 overflow-y-auto"
+                    className="flex-1 border border-gray-300 rounded-lg px-4 py-2 leading-6 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none max-h-40 overflow-y-auto"
                     disabled={isLoading}
                   />
                   <button
                     type="submit"
                     disabled={isLoading || !input.trim()}
-                    className="bg-blue-500 text-white px-6 py-2 rounded-lg hover:bg-blue-600 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
+                    className="bg-blue-500 text-white px-6 py-2 rounded-lg hover:bg-blue-600 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors self-end shrink-0"
                   >
                     送信
                   </button>
