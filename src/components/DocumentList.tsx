@@ -48,7 +48,7 @@ export default function DocumentList({ refreshKey = 0 }: { refreshKey?: number }
 
       <ul className="space-y-3">
         {docs.map(doc => (
-          <li key={doc.id} className="border rounded-lg p-3 bg-white">
+          <li key={doc.id} className="border border-gray-200 rounded-lg p-3 bg-gray-50 shadow">
             <div className="flex items-center justify-between">
               <div className="font-medium text-gray-900">{doc.title}</div>
               <div className="text-xs text-gray-500">{new Date(doc.created_at).toLocaleString('ja-JP')}</div>
