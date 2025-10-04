@@ -255,16 +255,27 @@ export default function ChatInterface() {
             <form onSubmit={handleSubmit} className="fixed bottom-0 inset-x-0 z-30 bg-white border-t p-4">
               <div className="max-w-[100vw] px-2 sm:px-4 lg:px-6 mx-auto">
                 <div className="flex space-x-2">
-                  <input
-                    type="text"
+                  <textarea
                     value={input}
-                    onChange={(e) => setInput(e.target.value)}
+                    onChange={(e) => {
+                      setInput(e.target.value)
+                      const el = e.currentTarget
+                      el.style.height = 'auto'
+                      el.style.height = Math.min(el.scrollHeight, 160) + 'px'
+                    }}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' && !e.shiftKey) {
+                        e.preventDefault()
+                        ;(e.currentTarget.form as HTMLFormElement | null)?.requestSubmit()
+                      }
+                    }}
                     placeholder={
-                      chatMode === 'rag' 
+                      chatMode === 'rag'
                         ? '社内文書に関する質問を入力してください...'
                         : '何でもお聞きください...'
                     }
-                    className="flex-1 border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    rows={1}
+                    className="flex-1 border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none max-h-40 overflow-y-auto"
                     disabled={isLoading}
                   />
                   <button
