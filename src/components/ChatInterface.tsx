@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react'
 import DocumentUploader from './DocumentUploader'
+import DocumentList from './DocumentList'
 
 interface Message {
   id: string
@@ -13,7 +14,7 @@ interface Message {
     source: string
     similarity: number
   }>
-  mode?: 'rag' | 'direct' | 'upload'
+  mode?: 'rag' | 'direct' | 'upload' | 'docs'
 }
 
 export default function ChatInterface() {
@@ -27,7 +28,8 @@ export default function ChatInterface() {
   ])
   const [input, setInput] = useState('')
   const [isLoading, setIsLoading] = useState(false)
-  const [chatMode, setChatMode] = useState<'rag' | 'direct' | 'upload'>('rag')
+  const [chatMode, setChatMode] = useState<'rag' | 'direct' | 'upload' | 'docs'>('rag')
+  const [docsRefreshKey, setDocsRefreshKey] = useState(0)
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const [sessionId] = useState(() => Math.random().toString(36).substring(7))
 
@@ -117,6 +119,8 @@ export default function ChatInterface() {
       mode: 'upload'
     }
     setMessages(prev => [...prev, successMessage])
+    // refresh list if user is on docs mode
+    setDocsRefreshKey(prev => prev + 1)
   }
 
   return (
@@ -131,17 +135,20 @@ export default function ChatInterface() {
               <select
                 value={chatMode}
                 onChange={(e) => {
-                  setChatMode(e.target.value as 'rag' | 'direct')
+                  const val = e.target.value as 'rag' | 'direct' | 'upload' | 'docs'
+                  setChatMode(val)
                   setMessages(prev => [...prev, {
                     id: Date.now().toString(),
                     type: 'bot',
-                    content: e.target.value === 'rag' 
+                    content: val === 'rag' 
                       ? 'RAGモードに切り替えました。社内文書を検索して回答します。'
-                      : e.target.value === 'direct'
+                      : val === 'direct'
                       ? '通常チャットモードに切り替えました。一般的な質問にお答えします。'
-                      : 'ドキュメント管理モードに切り替えました。新しい社内文書を追加できます。',
+                      : val === 'upload'
+                      ? 'ドキュメント管理モードに切り替えました。新しい社内文書を追加できます。'
+                      : 'アップロード済みドキュメント一覧モードに切り替えました。',
                     timestamp: new Date(),
-                    mode: e.target.value as 'rag' | 'direct' | 'upload'
+                    mode: val as any
                   }])
                 }}
                 className="bg-white border border-gray-300 rounded-md px-3 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -149,26 +156,31 @@ export default function ChatInterface() {
                 <option value="rag">RAG（文書検索）</option>
                 <option value="direct">通常チャット</option>
                 <option value="upload">📄 文書管理</option>
+                <option value="docs">📚 一覧を見る</option>
               </select>
             </div>
           </div>
         </div>
         <div className="text-xs text-gray-500 mt-1">
-          {chatMode === 'rag' 
-            ? '📚 社内文書を検索して関連情報に基づいて回答します'
-            : chatMode === 'direct'
-            ? '💬 一般的な知識に基づいて直接回答します'
-            : '📄 新しい社内文書を追加・管理します'
-          }
+          {chatMode === 'rag' && '📚 社内文書を検索して関連情報に基づいて回答します'}
+          {chatMode === 'direct' && '💬 一般的な知識に基づいて直接回答します'}
+          {chatMode === 'upload' && '📄 新しい社内文書を追加・管理します'}
+          {chatMode === 'docs' && '📚 アップロード済みのドキュメントを確認できます'}
         </div>
       </div>
 
         {/* コンテンツエリア */}
-      {chatMode === 'upload' ? (
+      {chatMode === 'upload' && (
         <DocumentUploader 
           onUploadSuccess={handleUploadSuccess}
         />
-      ) : (
+      )}
+      {chatMode === 'docs' && (
+        <div className="flex-1 overflow-y-auto">
+          <DocumentList refreshKey={docsRefreshKey} />
+        </div>
+      )}
+      {(chatMode === 'rag' || chatMode === 'direct') && (
         <>
           <div className="flex-1 overflow-y-auto p-4 space-y-4">{messages.map((message) => (
           <div
