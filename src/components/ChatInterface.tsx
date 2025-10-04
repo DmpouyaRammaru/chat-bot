@@ -18,14 +18,7 @@ interface Message {
 }
 
 export default function ChatInterface() {
-  const [messages, setMessages] = useState<Message[]>([
-    {
-      id: '1',
-      type: 'bot',
-      content: 'こんにちは！チャットボットです。RAGモード（社内文書検索）と通常チャットモードを切り替えることができます。',
-      timestamp: new Date()
-    }
-  ])
+  const [messages, setMessages] = useState<Message[]>([])
   const [input, setInput] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [chatMode, setChatMode] = useState<'rag' | 'direct' | 'upload' | 'docs'>('rag')
@@ -188,6 +181,13 @@ export default function ChatInterface() {
           <>
             {/* メッセージ一覧 */}
             <div className="p-4 space-y-4 pb-28">
+              {messages.length === 0 && !isLoading && input.trim().length === 0 && (
+                <div className="flex justify-start">
+                  <div className="bg-gray-100 shadow hover:shadow-md border border-gray-300 text-gray-900 rounded-lg px-4 py-2 max-w-xs">
+                    <div className="text-sm">{chatMode === 'rag' ? '社内文書を検索できます' : '通常の生成AIです'}</div>
+                  </div>
+                </div>
+              )}
               {messages.map((message) => (
                 <div
                   key={message.id}
