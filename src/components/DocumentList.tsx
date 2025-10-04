@@ -14,6 +14,7 @@ export default function DocumentList({ refreshKey = 0 }: { refreshKey?: number }
   const [docs, setDocs] = useState<Doc[]>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [openDoc, setOpenDoc] = useState<Doc | null>(null)
 
   const fetchDocs = async () => {
     setLoading(true)
@@ -32,6 +33,15 @@ export default function DocumentList({ refreshKey = 0 }: { refreshKey?: number }
 
   useEffect(() => { fetchDocs() }, [refreshKey])
 
+  useEffect(() => {
+    if (!openDoc) return
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setOpenDoc(null)
+    }
+    window.addEventListener('keydown', onKeyDown)
+    return () => window.removeEventListener('keydown', onKeyDown)
+  }, [openDoc])
+
   return (
     <div className="p-6 space-y-4">
       <div className="flex items-center justify-between">
@@ -48,18 +58,41 @@ export default function DocumentList({ refreshKey = 0 }: { refreshKey?: number }
 
       <ul className="space-y-3">
         {docs.map(doc => (
-          <li key={doc.id} className="border border-gray-200 rounded-lg p-3 bg-gray-50 shadow">
-            <div className="flex items-center justify-between">
-              <div className="font-medium text-gray-900">{doc.title}</div>
-              <div className="text-xs text-gray-500">{new Date(doc.created_at).toLocaleString('ja-JP')}</div>
-            </div>
-            <div className="text-xs text-gray-600 mt-1">カテゴリ: {doc.source}</div>
-            <div className="text-sm text-gray-700 mt-2 line-clamp-3 whitespace-pre-wrap">
-              {doc.content.length > 240 ? doc.content.slice(0, 240) + '…' : doc.content}
-            </div>
+          <li key={doc.id}>
+            <button
+              onClick={() => setOpenDoc(doc)}
+              className="w-full text-left border border-gray-200 rounded-lg p-3 bg-gray-50 shadow hover:shadow-md focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer transition"
+            >
+              <div className="flex items-center justify-between">
+                <div className="font-medium text-gray-900">{doc.title}</div>
+                <div className="text-xs text-gray-500">{new Date(doc.created_at).toLocaleString('ja-JP')}</div>
+              </div>
+              <div className="text-xs text-gray-600 mt-1">カテゴリ: {doc.source}</div>
+              <div className="text-sm text-gray-700 mt-2 line-clamp-3 whitespace-pre-wrap">
+                {doc.content.length > 240 ? doc.content.slice(0, 240) + '…' : doc.content}
+              </div>
+            </button>
           </li>
         ))}
       </ul>
+
+      {openDoc && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40" onClick={() => setOpenDoc(null)}>
+          <div role="dialog" aria-modal="true" className="bg-white w-[92vw] max-w-2xl max-h-[80vh] rounded-lg shadow-xl overflow-hidden" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between px-4 py-3 border-b">
+              <h4 className="font-semibold text-gray-900 truncate pr-4">{openDoc.title}</h4>
+              <button onClick={() => setOpenDoc(null)} className="text-gray-500 hover:text-gray-700 text-lg leading-none">✕</button>
+            </div>
+            <div className="px-4 py-2 text-xs text-gray-500 flex items-center justify-between">
+              <span>カテゴリ: {openDoc.source}</span>
+              <span>{new Date(openDoc.created_at).toLocaleString('ja-JP')}</span>
+            </div>
+            <div className="px-4 pb-4 overflow-y-auto">
+              <div className="whitespace-pre-wrap text-sm text-gray-800">{openDoc.content}</div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
