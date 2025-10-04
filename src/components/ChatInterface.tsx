@@ -124,7 +124,7 @@ export default function ChatInterface() {
   }
 
   return (
-    <div className="bg-white rounded-lg shadow-lg h-[600px] flex flex-col">
+    <div className="h-full w-full bg-white flex flex-col">
       <div className="flex-1 overflow-y-auto">
         {/* ヘッダー（常に上部に固定） */}
         <div className="sticky top-0 z-10 bg-white border-b p-4">
@@ -186,14 +186,14 @@ export default function ChatInterface() {
         {(chatMode === 'rag' || chatMode === 'direct') && (
           <>
             {/* メッセージ一覧 */}
-            <div className="p-4 space-y-4">
+            <div className="p-4 space-y-4 pb-28">
               {messages.map((message) => (
                 <div
                   key={message.id}
                   className={`flex ${message.type === 'user' ? 'justify-end' : 'justify-start'}`}
                 >
                   <div
-                    className={`max-w-xs lg:max-w-md xl:max-w-lg ${
+                    className={`max-w-xs lg:max-w-md xl-max-w-lg ${
                       message.type === 'user'
                         ? 'bg-blue-500 text-white'
                         : 'bg-gray-100 text-gray-900'
@@ -242,32 +242,32 @@ export default function ChatInterface() {
               )}
 
               <div ref={messagesEndRef} />
-              {/* フッターの重なりを避ける余白 */}
-              <div className="h-20" />
             </div>
 
-            {/* フッター（常に下部に固定） */}
-            <form onSubmit={handleSubmit} className="sticky bottom-0 z-10 bg-white border-t p-4">
-              <div className="flex space-x-2">
-                <input
-                  type="text"
-                  value={input}
-                  onChange={(e) => setInput(e.target.value)}
-                  placeholder={
-                    chatMode === 'rag' 
-                      ? "社内文書に関する質問を入力してください..."
-                      : "何でもお聞きください..."
-                  }
-                  className="flex-1 border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  disabled={isLoading}
-                />
-                <button
-                  type="submit"
-                  disabled={isLoading || !input.trim()}
-                  className="bg-blue-500 text-white px-6 py-2 rounded-lg hover:bg-blue-600 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
-                >
-                  送信
-                </button>
+            {/* フッター（画面最下部に固定） */}
+            <form onSubmit={handleSubmit} className="fixed bottom-0 inset-x-0 z-30 bg-white border-t p-4">
+              <div className="max-w-[100vw] px-2 sm:px-4 lg:px-6 mx-auto">
+                <div className="flex space-x-2">
+                  <input
+                    type="text"
+                    value={input}
+                    onChange={(e) => setInput(e.target.value)}
+                    placeholder={
+                      chatMode === 'rag' 
+                        ? '社内文書に関する質問を入力してください...'
+                        : '何でもお聞きください...'
+                    }
+                    className="flex-1 border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    disabled={isLoading}
+                  />
+                  <button
+                    type="submit"
+                    disabled={isLoading || !input.trim()}
+                    className="bg-blue-500 text-white px-6 py-2 rounded-lg hover:bg-blue-600 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
+                  >
+                    送信
+                  </button>
+                </div>
               </div>
             </form>
           </>
