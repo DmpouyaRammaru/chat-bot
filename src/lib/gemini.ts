@@ -40,6 +40,7 @@ ${question}
     const response = await result.response
     return response.text()
   } catch (error) {
+    void error
     return '申し訳ございませんが、現在AIサービスに問題が発生しています。'
   }
 }
@@ -69,6 +70,7 @@ export async function generateDirectAnswerWithImages(
     const response = await result.response
     return response.text()
   } catch (error) {
+    void error
     return '申し訳ございませんが、現在AIサービスに問題が発生しています。'
   }
 }
@@ -96,6 +98,7 @@ ${question}
     const response = await result.response
     return response.text()
   } catch (error) {
+    void error
     return '申し訳ございませんが、現在AIサービスに問題が発生しています。'
   }
 }
@@ -133,6 +136,7 @@ ${question}
     const response = await result.response
     return response.text()
   } catch (error) {
+    void error
     return '申し訳ございませんが、現在AIサービスに問題が発生しています。'
   }
 }

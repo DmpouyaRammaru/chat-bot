@@ -1,9 +1,9 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase'
 import { generateEmbedding } from '@/lib/gemini'
 
-export async function POST(request: NextRequest) {
-  const { data: testData, error: testError } = await supabaseAdmin
+export async function POST() {
+  const { error: testError } = await supabaseAdmin
     .from('documents')
     .select('id')
     .limit(1)
