@@ -16,6 +16,19 @@ export default function DocumentList({ refreshKey = 0 }: { refreshKey?: number }
   const [error, setError] = useState<string | null>(null)
   const [openDoc, setOpenDoc] = useState<Doc | null>(null)
 
+  const categoryBadge = (source: string) => {
+    const map: Record<string, string> = {
+      manual: 'bg-blue-100 text-blue-700',
+      FAQ: 'bg-green-100 text-green-700',
+      '人事資料': 'bg-pink-100 text-pink-700',
+      '業務手順書': 'bg-yellow-100 text-yellow-700',
+      'セキュリティガイドライン': 'bg-red-100 text-red-700',
+      '技術文書': 'bg-purple-100 text-purple-700',
+      'その他': 'bg-gray-100 text-gray-700',
+    }
+    return map[source] ?? 'bg-gray-100 text-gray-700'
+  }
+
   const fetchDocs = async () => {
     setLoading(true)
     setError(null)
@@ -65,9 +78,13 @@ export default function DocumentList({ refreshKey = 0 }: { refreshKey?: number }
             >
               <div className="flex items-center justify-between">
                 <div className="font-medium text-gray-900">{doc.title}</div>
-                <div className="text-xs text-gray-500">{new Date(doc.created_at).toLocaleString('ja-JP')}</div>
+                <div className="flex items-center gap-2">
+                  <span className={`inline-flex items-center px-2 py-0.5 text-[11px] font-medium rounded ${categoryBadge(doc.source)}`}>
+                    {doc.source}
+                  </span>
+                  <div className="text-xs text-gray-500">{new Date(doc.created_at).toLocaleString('ja-JP')}</div>
+                </div>
               </div>
-              <div className="text-xs text-gray-600 mt-1">カテゴリ: {doc.source}</div>
               <div className="text-sm text-gray-700 mt-2 line-clamp-3 whitespace-pre-wrap">
                 {doc.content.length > 240 ? doc.content.slice(0, 240) + '…' : doc.content}
               </div>
