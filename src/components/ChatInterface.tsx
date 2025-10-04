@@ -1,6 +1,8 @@
 'use client'
 
 import { useState, useRef, useEffect } from 'react'
+import ReactMarkdown from 'react-markdown'
+import remarkGfm from 'remark-gfm'
 import DocumentUploader from './DocumentUploader'
 import DocumentList from './DocumentList'
 
@@ -200,7 +202,11 @@ export default function ChatInterface() {
                         : 'bg-gray-100 shadow hover:shadow-md border border-gray-300 text-gray-900'
                     } rounded-lg px-4 py-2`}
                   >
-                    <div className="text-sm">{message.content}</div>
+                    <div className="text-sm leading-relaxed">
+                      <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                        {message.content}
+                      </ReactMarkdown>
+                    </div>
                     <div
                       className={`text-xs mt-1 ${
                         message.type === 'user' ? 'text-blue-100' : 'text-gray-500'
