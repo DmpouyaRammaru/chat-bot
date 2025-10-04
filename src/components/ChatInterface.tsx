@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useRef, useEffect } from 'react'
+import Image from 'next/image'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import DocumentUploader from './DocumentUploader'
@@ -200,7 +201,7 @@ export default function ChatInterface() {
                   className={`flex ${message.type === 'user' ? 'justify-end' : 'justify-start'}`}
                 >
                   <div
-                    className={`max-w-xs lg:max-w-md xl-max-w-lg ${
+                    className={`max-w-xs lg:max-w-md xl:max-w-lg ${
                       message.type === 'user'
                         ? 'bg-blue-500 text-white'
                         : 'bg-gray-100 shadow hover:shadow-md border border-gray-300 text-gray-900'
@@ -264,7 +265,7 @@ export default function ChatInterface() {
                     <div className="flex space-x-2 max-w-[40vw] overflow-x-auto pr-2">
                       {images.map((img, idx) => (
                         <div key={idx} className="relative w-16 h-16 border rounded overflow-hidden">
-                          <img src={img.url} alt={`preview-${idx}`} className="object-cover w-full h-full" />
+                          <Image src={img.url} alt={`preview-${idx}`} width={64} height={64} className="object-cover w-full h-full" />
                         </div>
                       ))}
                     </div>
@@ -325,7 +326,7 @@ export default function ChatInterface() {
                   </label>
                   <button
                     type="submit"
-                    disabled={isLoading || !input.trim()}
+                    disabled={isLoading || (!input.trim() && images.length === 0)}
                     className="bg-blue-500 text-white px-6 py-2 rounded-lg hover:bg-blue-600 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors self-end shrink-0"
                   >
                     送信

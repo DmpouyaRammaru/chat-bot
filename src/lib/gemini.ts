@@ -171,6 +171,7 @@ export async function generateContextualAnswerWithImages(
     const response = await result.response
     return response.text()
   } catch (error) {
-    return '申し訳ございませんが、現在AIサービスに問題が発生しています。'
+  void error
+  return '申し訳ございませんが、現在AIサービスに問題が発生しています。'
   }
 }
