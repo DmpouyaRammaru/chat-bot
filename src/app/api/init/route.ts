@@ -36,7 +36,7 @@ export async function POST(request: NextRequest) {
   ]
 
   let successCount = 0
-  let errors: string[] = []
+  const errors: string[] = []
 
   for (const doc of sampleDocuments) {
     try {

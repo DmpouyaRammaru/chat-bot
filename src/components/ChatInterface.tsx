@@ -30,6 +30,7 @@ export default function ChatInterface() {
   const [isLoading, setIsLoading] = useState(false)
   const [chatMode, setChatMode] = useState<'rag' | 'direct' | 'upload' | 'docs'>('rag')
   const [docsRefreshKey, setDocsRefreshKey] = useState(0)
+  const [modeEpoch, setModeEpoch] = useState(0)
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const [sessionId] = useState(() => Math.random().toString(36).substring(7))
 
@@ -51,6 +52,8 @@ export default function ChatInterface() {
       content: input.trim(),
       timestamp: new Date()
     }
+
+    const submitEpoch = modeEpoch
 
     setMessages(prev => [...prev, userMessage])
     setInput('')
@@ -80,6 +83,9 @@ export default function ChatInterface() {
 
       const data = await response.json()
 
+      // モードが切り替わっていたら反映しない
+      if (modeEpoch !== submitEpoch) return
+
       const botMessage: Message = {
         id: (Date.now() + 1).toString(),
         type: 'bot',
@@ -91,13 +97,16 @@ export default function ChatInterface() {
 
       setMessages(prev => [...prev, botMessage])
     } catch (error) {
-      const errorMessage: Message = {
-        id: (Date.now() + 1).toString(),
-        type: 'bot',
-        content: `エラーが発生しました: ${error instanceof Error ? error.message : '不明なエラー'}`,
-        timestamp: new Date()
+      // モードが切り替わっていたらエラーメッセージも表示しない
+      if (modeEpoch === submitEpoch) {
+        const errorMessage: Message = {
+          id: (Date.now() + 1).toString(),
+          type: 'bot',
+          content: `エラーが発生しました: ${error instanceof Error ? error.message : '不明なエラー'}`,
+          timestamp: new Date()
+        }
+        setMessages(prev => [...prev, errorMessage])
       }
-      setMessages(prev => [...prev, errorMessage])
     } finally {
       setIsLoading(false)
     }
@@ -123,6 +132,14 @@ export default function ChatInterface() {
     setDocsRefreshKey(prev => prev + 1)
   }
 
+  const handleModeChange = (val: 'rag' | 'direct' | 'upload' | 'docs') => {
+    setChatMode(val)
+    // モード切り替え時はメッセージを全クリア（通知メッセージも表示しない）
+    setMessages([] as Message[])
+    setInput('')
+    setModeEpoch((e) => e + 1)
+  }
+
   return (
     <div className={`h-full w-full flex flex-col`}>
       <div className="flex-1 overflow-y-auto">
@@ -135,23 +152,7 @@ export default function ChatInterface() {
               <div className="relative">
                 <select
                   value={chatMode}
-                  onChange={(e) => {
-                    const val = e.target.value as 'rag' | 'direct' | 'upload' | 'docs'
-                    setChatMode(val)
-                    setMessages(prev => [...prev, {
-                      id: Date.now().toString(),
-                      type: 'bot',
-                      content: val === 'rag' 
-                        ? 'RAGモードに切り替えました。社内文書を検索して回答します。'
-                        : val === 'direct'
-                        ? '通常チャットモードに切り替えました。一般的な質問にお答えします。'
-                        : val === 'upload'
-                        ? 'ドキュメント管理モードに切り替えました。新しい社内文書を追加できます。'
-                        : 'アップロード済みドキュメント一覧モードに切り替えました。',
-                      timestamp: new Date(),
-                      mode: val as any
-                    }])
-                  }}
+                  onChange={(e) => handleModeChange(e.target.value as 'rag' | 'direct' | 'upload' | 'docs')}
                   className="bg-white border border-gray-300 rounded-md px-3 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                 >
                   <option value="rag">RAG（文書検索）</option>

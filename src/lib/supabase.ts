@@ -22,7 +22,11 @@ export interface ChatHistory {
   session_id: string
   question: string
   answer: string
-  relevant_documents?: any
+  relevant_documents?: Array<{
+    title: string
+    source: string
+    similarity: number
+  }>
   created_at: string
 }
 
