@@ -124,7 +124,7 @@ export default function ChatInterface() {
   }
 
   return (
-    <div className="h-full w-full bg-white flex flex-col">
+    <div className={`h-full w-full flex flex-col`}>
       <div className="flex-1 overflow-y-auto">
         {/* ヘッダー（常に上部に固定） */}
         <div className="sticky top-0 z-10 bg-white border-b p-4">
@@ -196,7 +196,7 @@ export default function ChatInterface() {
                     className={`max-w-xs lg:max-w-md xl-max-w-lg ${
                       message.type === 'user'
                         ? 'bg-blue-500 text-white'
-                        : 'bg-gray-100 text-gray-900'
+                        : 'bg-gray-100 shadow hover:shadow-md border border-gray-300 text-gray-900'
                     } rounded-lg px-4 py-2`}
                   >
                     <div className="text-sm">{message.content}</div>
@@ -207,7 +207,7 @@ export default function ChatInterface() {
                     >
                       {formatTime(message.timestamp)}
                       {message.mode && message.type === 'bot' && (
-                        <span className="ml-2 px-1 py-0.5 bg-opacity-20 bg-black rounded text-xs">
+                        <span className="ml-2 px-1 py-0.5 bg-opacity-20 bg-white rounded text-xs">
                           {message.mode === 'rag' ? 'RAG' : message.mode === 'direct' ? '通常' : '管理'}
                         </span>
                       )}

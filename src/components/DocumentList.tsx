@@ -74,7 +74,7 @@ export default function DocumentList({ refreshKey = 0 }: { refreshKey?: number }
           <li key={doc.id}>
             <button
               onClick={() => setOpenDoc(doc)}
-              className="w-full text-left border border-gray-200 rounded-lg p-3 bg-gray-50 shadow hover:shadow-md focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer transition"
+              className="w-full text-left border border-gray-200 rounded-lg p-3 bg-gray-100 shadow hover:shadow-md focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer transition"
             >
               <div className="flex items-center justify-between">
                 <div className="font-medium text-gray-900">{doc.title}</div>
@@ -95,7 +95,7 @@ export default function DocumentList({ refreshKey = 0 }: { refreshKey?: number }
 
       {openDoc && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40" onClick={() => setOpenDoc(null)}>
-          <div role="dialog" aria-modal="true" className="bg-white w-[92vw] max-w-2xl max-h-[80vh] rounded-lg shadow-xl overflow-hidden" onClick={(e) => e.stopPropagation()}>
+          <div role="dialog" aria-modal="true" className="bg-gray-100 w-[92vw] max-w-2xl max-h-[80vh] rounded-lg shadow-xl overflow-hidden" onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center justify-between px-4 py-3 border-b">
               <h4 className="font-semibold text-gray-900 truncate pr-4">{openDoc.title}</h4>
               <button onClick={() => setOpenDoc(null)} className="text-gray-500 hover:text-gray-700 text-lg leading-none">✕</button>
