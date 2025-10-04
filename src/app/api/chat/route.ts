@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin, type DocumentMatch } from '@/lib/supabase'
-import { generateEmbedding, generateContextualAnswer } from '@/lib/gemini'
+import { generateEmbedding, generateContextualAnswer, generateContextualAnswerWithImages, type InputImage } from '@/lib/gemini'
 
 function calculateCosineSimilarity(a: number[], b: number[]): number {
   if (a.length !== b.length) return 0
@@ -21,7 +21,7 @@ function calculateCosineSimilarity(a: number[], b: number[]): number {
 }
 
 export async function POST(request: NextRequest) {
-  const { question, sessionId, chatHistory = [] } = await request.json()
+  const { question, sessionId, chatHistory = [], images = [] } = await request.json()
 
   if (!question || typeof question !== 'string') {
     return NextResponse.json(
@@ -79,15 +79,27 @@ export async function POST(request: NextRequest) {
     })
   }
 
-  const answer = await generateContextualAnswer(
-    question,
-    documents.map(doc => ({
-      title: doc.title,
-      content: doc.content,
-      source: doc.source || 'unknown'
-    })),
-    chatHistory
-  )
+  const hasImages = Array.isArray(images) && images.length > 0
+  const answer = hasImages
+    ? await generateContextualAnswerWithImages(
+        question,
+        documents.map(doc => ({
+          title: doc.title,
+          content: doc.content,
+          source: doc.source || 'unknown'
+        })),
+        images.filter(Boolean).map((img: InputImage) => ({ mimeType: img.mimeType, data: img.data })),
+        chatHistory
+      )
+    : await generateContextualAnswer(
+        question,
+        documents.map(doc => ({
+          title: doc.title,
+          content: doc.content,
+          source: doc.source || 'unknown'
+        })),
+        chatHistory
+      )
 
   await supabaseAdmin
     .from('chat_history')
@@ -95,12 +107,13 @@ export async function POST(request: NextRequest) {
       session_id: sessionId,
       question,
       answer,
-      relevant_documents: documents.map(doc => ({
+  relevant_documents: documents.map(doc => ({
         id: doc.id,
         title: doc.title,
         source: doc.source,
         similarity: doc.similarity
-      }))
+  })),
+  images: hasImages ? (images as InputImage[]).map((i) => ({ mimeType: i.mimeType })) : []
     })
 
   return NextResponse.json({

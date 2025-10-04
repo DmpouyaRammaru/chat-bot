@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { generateDirectAnswer } from '@/lib/gemini'
+import { generateDirectAnswer, generateDirectAnswerWithImages, type InputImage } from '@/lib/gemini'
 import { supabaseAdmin } from '@/lib/supabase'
 
 export async function POST(request: NextRequest) {
-  const { question, sessionId, chatHistory = [] } = await request.json()
+  const { question, sessionId, chatHistory = [], images = [] } = await request.json()
 
   if (!question || typeof question !== 'string') {
     return NextResponse.json(
@@ -12,7 +12,14 @@ export async function POST(request: NextRequest) {
     )
   }
 
-  const answer = await generateDirectAnswer(question, chatHistory)
+  const hasImages = Array.isArray(images) && images.length > 0
+  const answer = hasImages
+    ? await generateDirectAnswerWithImages(
+        question,
+        images.filter(Boolean).map((img: InputImage) => ({ mimeType: img.mimeType, data: img.data })),
+        chatHistory
+      )
+    : await generateDirectAnswer(question, chatHistory)
 
   await supabaseAdmin
     .from('chat_history')
@@ -20,7 +27,7 @@ export async function POST(request: NextRequest) {
       session_id: sessionId,
       question,
       answer,
-      relevant_documents: { mode: 'direct' }
+  relevant_documents: { mode: 'direct', images: hasImages ? (images as InputImage[]).map((i) => ({ mimeType: i.mimeType })) : [] }
     })
 
   return NextResponse.json({

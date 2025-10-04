@@ -28,6 +28,7 @@ export default function ChatInterface() {
   const [modeEpoch, setModeEpoch] = useState(0)
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const [sessionId] = useState(() => Math.random().toString(36).substring(7))
+  const [images, setImages] = useState<Array<{ mimeType: string; data: string; url: string }>>([])
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -39,7 +40,7 @@ export default function ChatInterface() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!input.trim() || isLoading) return
+    if ((!input.trim() && images.length === 0) || isLoading) return
 
     const userMessage: Message = {
       id: Date.now().toString(),
@@ -56,7 +57,7 @@ export default function ChatInterface() {
 
     try {
       const apiEndpoint = chatMode === 'rag' ? '/api/chat' : '/api/simple-chat'
-      const response = await fetch(apiEndpoint, {
+  const response = await fetch(apiEndpoint, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -68,7 +69,8 @@ export default function ChatInterface() {
             .filter(m => m.type !== 'bot' || !m.content.includes('こんにちは！'))
             .slice(-6)
             .map(m => ({ question: m.type === 'user' ? m.content : '', answer: m.type === 'bot' ? m.content : '' }))
-            .filter(m => m.question || m.answer)
+    .filter(m => m.question || m.answer),
+      images: images.map(i => ({ mimeType: i.mimeType, data: i.data }))
         }),
       })
 
@@ -90,7 +92,8 @@ export default function ChatInterface() {
         mode: chatMode
       }
 
-      setMessages(prev => [...prev, botMessage])
+  setMessages(prev => [...prev, botMessage])
+  setImages([])
     } catch (error) {
       // モードが切り替わっていたらエラーメッセージも表示しない
       if (modeEpoch === submitEpoch) {
@@ -132,6 +135,7 @@ export default function ChatInterface() {
     // モード切り替え時はメッセージを全クリア（通知メッセージも表示しない）
     setMessages([] as Message[])
     setInput('')
+  setImages([])
     setModeEpoch((e) => e + 1)
   }
 
@@ -255,6 +259,16 @@ export default function ChatInterface() {
             <form onSubmit={handleSubmit} className="fixed bottom-0 inset-x-0 z-30 bg-white border-t p-4">
               <div className="max-w-[100vw] px-2 sm:px-4 lg:px-6 mx-auto">
                 <div className="flex items-end space-x-2">
+                  {/* 画像プレビュー */}
+                  {images.length > 0 && (
+                    <div className="flex space-x-2 max-w-[40vw] overflow-x-auto pr-2">
+                      {images.map((img, idx) => (
+                        <div key={idx} className="relative w-16 h-16 border rounded overflow-hidden">
+                          <img src={img.url} alt={`preview-${idx}`} className="object-cover w-full h-full" />
+                        </div>
+                      ))}
+                    </div>
+                  )}
                   <textarea
                     value={input}
                     onChange={(e) => {
@@ -278,6 +292,37 @@ export default function ChatInterface() {
                     className="flex-1 border border-gray-300 rounded-lg px-4 py-2 leading-6 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none max-h-40 overflow-y-auto"
                     disabled={isLoading}
                   />
+                  {/* 画像添付ボタン */}
+                  <label className="inline-flex items-center justify-center px-3 py-2 border border-gray-300 rounded-lg bg-white hover:bg-gray-50 cursor-pointer shrink-0">
+                    画像
+                    <input
+                      type="file"
+                      accept="image/*"
+                      multiple
+                      className="hidden"
+                      onChange={async (e) => {
+                        const files = Array.from(e.target.files || [])
+                        const newImages: Array<{ mimeType: string; data: string; url: string }> = []
+                        for (const file of files) {
+                          const base64 = await new Promise<string>((resolve, reject) => {
+                            const reader = new FileReader()
+                            reader.onload = () => {
+                              const result = reader.result as string
+                              const data = result.split(',')[1] || ''
+                              resolve(data)
+                            }
+                            reader.onerror = () => reject(reader.error)
+                            reader.readAsDataURL(file)
+                          })
+                          newImages.push({ mimeType: file.type, data: base64, url: URL.createObjectURL(file) })
+                        }
+                        setImages(prev => [...prev, ...newImages])
+                        // 入力欄にフォーカスを戻す
+                        const ta = document.querySelector('textarea') as HTMLTextAreaElement | null
+                        ta?.focus()
+                      }}
+                    />
+                  </label>
                   <button
                     type="submit"
                     disabled={isLoading || !input.trim()}
