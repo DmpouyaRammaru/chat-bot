@@ -66,15 +66,13 @@ export default function ChatInterface() {
           sessionId: sessionId,
           chatHistory: messages
             .filter(m => m.type !== 'bot' || !m.content.includes('こんにちは！'))
-            .slice(-6) // 直近6件の履歴
+            .slice(-6)
             .map(m => ({ question: m.type === 'user' ? m.content : '', answer: m.type === 'bot' ? m.content : '' }))
             .filter(m => m.question || m.answer)
         }),
       })
 
       if (!response.ok) {
-        const errorText = await response.text()
-        console.error('Response not ok:', response.status, response.statusText, errorText)
         throw new Error(`サーバーエラーが発生しました (${response.status}): ${response.statusText}`)
       }
 
@@ -91,7 +89,6 @@ export default function ChatInterface() {
 
       setMessages(prev => [...prev, botMessage])
     } catch (error) {
-      console.error('Error:', error)
       const errorMessage: Message = {
         id: (Date.now() + 1).toString(),
         type: 'bot',
@@ -111,31 +108,20 @@ export default function ChatInterface() {
     })
   }
 
-  const handleUploadSuccess = (message: string) => {
+  const handleUploadSuccess = (document: { title: string }) => {
     const successMessage: Message = {
       id: Date.now().toString(),
       type: 'bot',
-      content: `✅ ${message}\n\nRAGモードに切り替えて、アップロードしたドキュメントを検索してみてください。`,
+      content: `✅ ドキュメント「${document.title}」をアップロードしました\n\nRAGモードに切り替えて、アップロードしたドキュメントを検索してみてください。`,
       timestamp: new Date(),
       mode: 'upload'
     }
     setMessages(prev => [...prev, successMessage])
   }
 
-  const handleUploadError = (error: string) => {
-    const errorMessage: Message = {
-      id: Date.now().toString(),
-      type: 'bot',
-      content: `❌ エラー: ${error}`,
-      timestamp: new Date(),
-      mode: 'upload'
-    }
-    setMessages(prev => [...prev, errorMessage])
-  }
-
   return (
     <div className="bg-white rounded-lg shadow-lg h-[600px] flex flex-col">
-      {/* モード切り替えヘッダー */}
+        {/* モード切り替えヘッダー */}
       <div className="border-b p-4">
         <div className="flex items-center justify-between">
           <h3 className="text-lg font-semibold text-gray-800">チャットボット</h3>
@@ -177,11 +163,10 @@ export default function ChatInterface() {
         </div>
       </div>
 
-      {/* コンテンツエリア */}
+        {/* コンテンツエリア */}
       {chatMode === 'upload' ? (
         <DocumentUploader 
           onUploadSuccess={handleUploadSuccess}
-          onUploadError={handleUploadError}
         />
       ) : (
         <>
@@ -211,7 +196,6 @@ export default function ChatInterface() {
                 )}
               </div>
               
-              {/* 関連ドキュメントの表示 */}
               {message.relevantDocs && message.relevantDocs.length > 0 && (
                 <div className="mt-3 p-2 bg-gray-50 rounded text-xs">
                   <div className="font-semibold text-gray-700 mb-1">参考にした文書:</div>

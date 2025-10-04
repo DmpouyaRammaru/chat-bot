@@ -3,25 +3,26 @@
 import { useState } from 'react'
 
 interface DocumentUploaderProps {
-  onUploadSuccess: (message: string) => void
-  onUploadError: (error: string) => void
+  onUploadSuccess: (document: { title: string }) => void
 }
 
-export default function DocumentUploader({ onUploadSuccess, onUploadError }: DocumentUploaderProps) {
+export default function DocumentUploader({ onUploadSuccess }: DocumentUploaderProps) {
   const [title, setTitle] = useState('')
   const [content, setContent] = useState('')
   const [source, setSource] = useState('manual')
   const [isUploading, setIsUploading] = useState(false)
+  const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null)
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     
     if (!title.trim() || !content.trim()) {
-      onUploadError('タイトルと内容を入力してください')
+      setMessage({ type: 'error', text: 'タイトルと内容を入力してください' })
       return
     }
 
     setIsUploading(true)
+    setMessage(null)
 
     try {
       const response = await fetch('/api/documents', {
@@ -41,17 +42,15 @@ export default function DocumentUploader({ onUploadSuccess, onUploadError }: Doc
         throw new Error(errorData.error || 'アップロードに失敗しました')
       }
 
-      const data = await response.json()
-      onUploadSuccess(`ドキュメント「${title}」をアップロードしました`)
+      onUploadSuccess({ title })
+      setMessage({ type: 'success', text: `ドキュメント「${title}」をアップロードしました` })
       
-      // フォームをリセット
       setTitle('')
       setContent('')
       setSource('manual')
 
     } catch (error) {
-      console.error('Upload error:', error)
-      onUploadError(error instanceof Error ? error.message : 'アップロードエラーが発生しました')
+      setMessage({ type: 'error', text: error instanceof Error ? error.message : 'アップロードエラーが発生しました' })
     } finally {
       setIsUploading(false)
     }
@@ -67,6 +66,16 @@ export default function DocumentUploader({ onUploadSuccess, onUploadError }: Doc
           新しい社内ドキュメントを追加して、RAGモードで検索可能にします
         </p>
       </div>
+
+      {message && (
+        <div className={`p-3 rounded-lg text-sm ${
+          message.type === 'success' 
+            ? 'bg-green-100 text-green-800 border border-green-200' 
+            : 'bg-red-100 text-red-800 border border-red-200'
+        }`}>
+          {message.text}
+        </div>
+      )}
 
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
@@ -120,9 +129,6 @@ export default function DocumentUploader({ onUploadSuccess, onUploadError }: Doc
             disabled={isUploading}
             required
           />
-          <div className="text-xs text-gray-500 mt-1">
-            文字数: {content.length}
-          </div>
         </div>
 
         <button

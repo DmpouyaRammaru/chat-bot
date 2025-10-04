@@ -4,13 +4,9 @@ const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
 
-// フロントエンド用のSupabaseクライアント
 export const supabase = createClient(supabaseUrl, supabaseAnonKey)
-
-// サーバーサイド用のSupabaseクライアント（Service Role Key使用）
 export const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey)
 
-// データベースの型定義
 export interface Document {
   id: string
   title: string
