@@ -124,8 +124,8 @@ export default function ChatInterface() {
   }
 
   return (
-    <div className="bg-white rounded-lg shadow-lg h-[600px] flex flex-col">
-        {/* モード切り替えヘッダー */}
+    <div className="bg-white rounded-lg shadow-lg min-h-[600px] max-h-[85vh] flex flex-col overflow-hidden">
+      {/* モード切り替えヘッダー */}
       <div className="border-b p-4">
         <div className="flex items-center justify-between">
           <h3 className="text-lg font-semibold text-gray-800">チャットボット</h3>
@@ -169,11 +169,13 @@ export default function ChatInterface() {
         </div>
       </div>
 
-        {/* コンテンツエリア */}
+      {/* コンテンツエリア */}
       {chatMode === 'upload' && (
-        <DocumentUploader 
-          onUploadSuccess={handleUploadSuccess}
-        />
+        <div className="flex-1 overflow-y-auto">
+          <DocumentUploader 
+            onUploadSuccess={handleUploadSuccess}
+          />
+        </div>
       )}
       {chatMode === 'docs' && (
         <div className="flex-1 overflow-y-auto">
