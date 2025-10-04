@@ -124,11 +124,14 @@ export default function DocumentUploader({ onUploadSuccess }: DocumentUploaderPr
             value={content}
             onChange={(e) => setContent(e.target.value)}
             placeholder="ドキュメントの内容を入力してください..."
-            rows={8}
+            rows={10}
             className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-vertical"
             disabled={isUploading}
             required
           />
+          <div className="text-xs text-gray-500 mt-1">
+            文字数: {content.length}
+          </div>
         </div>
 
         <button
