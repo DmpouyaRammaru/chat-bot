@@ -8,9 +8,6 @@
 - モード切替: rag / direct / upload / docs
 - 文書管理: テキスト文書のアップロード、一覧閲覧（モーダル表示）
 - マルチモーダル: 画像の添付と質問（Gemini 2.5 Flash）
-- Markdown対応: 箇条書き・表・コードブロックなどを表示
-- 使いやすいUI: 上部にモード切替、下部に固定入力欄、Shift+Enterで改行/Enterで送信
-- 履歴クリア: モード切替時はメッセージを非表示に（受信待ちレスポンスもガード）
 
 ## 技術スタック
 - Web: Next.js 15 (App Router) / React 19 / TypeScript / Tailwind CSS 4
@@ -21,9 +18,9 @@
 
 ## セットアップ
 ### 前提
-- Node.js 18+（推奨 LTS）
+- Node.js 18+
 - Supabase プロジェクト（pgvector 有効）
-- Google AI Studio で Gemini API Key
+- Google AI Studio  Gemini API Key
 
 ### 1) 依存関係のインストール
 ```powershell
@@ -37,45 +34,6 @@ NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
 SUPABASE_SERVICE_ROLE_KEY=your_supabase_service_role_key
 GEMINI_API_KEY=your_gemini_api_key
-```
-
-- SERVICE_ROLE_KEY はサーバーサイド(API Routes)のみで使用されます。クライアントに露出しないようにしてください。
-
-### 3) データベース（最小スキーマ）
-pgvector拡張とテーブル作成例です。既に作成済みならスキップ可。RPCが未定義でも本アプリはフォールバック検索で動作します。
-
-```sql
--- pgvector
-create extension if not exists vector;
-
--- 文書テーブル
-create table if not exists documents (
-  id uuid primary key default gen_random_uuid(),
-  title text not null,
-  content text not null,
-  source text,
-  embedding vector(768),
-  created_at timestamp with time zone default now()
-);
-
--- チャット履歴
-create table if not exists chat_history (
-  id uuid primary key default gen_random_uuid(),
-  session_id text not null,
-  question text not null,
-  answer text not null,
-  relevant_documents jsonb,
-  created_at timestamp with time zone default now()
-);
-
--- （任意）最近傍検索RPC
--- クエリ埋め込み(query_embedding)に対し、類似文書を返す関数
--- 例: match_documents(query_embedding vector(768), match_threshold float, match_count int)
-```
-
-サンプルデータ投入は以下で可能です:
-```powershell
-curl -X POST http://localhost:3000/api/init
 ```
 
 ## 実行方法
@@ -119,25 +77,3 @@ npm start
 - POST `/api/init` サンプル文書投入
 - GET `/api/status` DBや関数の疎通確認
 - GET `/api/models` モデル情報の簡易表示
-
-## 設計ノート
-- RAG 検索
-  - `match_documents` RPC があれば利用、無ければ全文走査＋簡易スコアでフォールバック
-- 生成まわり
-  - 生成: `gemini-2.5-flash`
-  - 画像は `inlineData` として送信し、テキストと併せて回答生成
-- セキュリティ/運用
-  - APIキーは `.env.local` に保管し、リポジトリへコミットしないこと
-  - サービスロールキーはクライアントに露出させない
-  - 外部LLMに送る情報の機微性を確認（PII/機密情報の取り扱い）
-
-## トラブルシュート
-- 「データベーステーブルが見つかりません」
-  - `documents` / `chat_history` が未作成。上記スキーマを適用し、`/api/init` を実行
-- 類似検索が0件になる
-  - 埋め込み未生成の可能性。`/api/documents` の `PUT` で再生成
-- 画像添付時のエラー
-  - 大容量画像は送信サイズに注意。必要ならサイズ上限や枚数制限を導入
-- Next.js の `<img>` 警告
-  - プレビュー最適化には `next/image` の使用を検討
-
