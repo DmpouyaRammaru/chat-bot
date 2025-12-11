@@ -6,6 +6,7 @@ import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import DocumentUploader from './DocumentUploader'
 import DocumentList from './DocumentList'
+import type { ModelType } from '@/lib/ollama'
 
 interface Message {
   id: string
@@ -25,6 +26,7 @@ export default function ChatInterface() {
   const [input, setInput] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [chatMode, setChatMode] = useState<'rag' | 'direct' | 'upload' | 'docs'>('rag')
+  const [modelType, setModelType] = useState<ModelType>('gemini')
   const [docsRefreshKey, setDocsRefreshKey] = useState(0)
   const [modeEpoch, setModeEpoch] = useState(0)
   const messagesEndRef = useRef<HTMLDivElement>(null)
@@ -70,8 +72,9 @@ export default function ChatInterface() {
             .filter(m => m.type !== 'bot' || !m.content.includes('こんにちは！'))
             .slice(-6)
             .map(m => ({ question: m.type === 'user' ? m.content : '', answer: m.type === 'bot' ? m.content : '' }))
-    .filter(m => m.question || m.answer),
-      images: images.map(i => ({ mimeType: i.mimeType, data: i.data }))
+	    .filter(m => m.question || m.answer),
+	      images: images.map(i => ({ mimeType: i.mimeType, data: i.data })),
+          modelType,
         }),
       })
 
@@ -141,25 +144,57 @@ export default function ChatInterface() {
   }
 
   return (
-    <div className={`h-full w-full flex flex-col`}>
+    <div className="h-full w-full flex flex-col">
       <div className="flex-1 overflow-y-auto">
         {/* ヘッダー（常に上部に固定） */}
         <div className="sticky top-0 z-10 bg-white border-b p-4">
           <div className="flex items-center justify-between">
             <h3 className="text-lg font-semibold text-gray-800">チャットボット</h3>
-            <div className="flex items-center space-x-2">
-              <span className="text-sm text-gray-600">モード:</span>
-              <div className="relative">
-                <select
-                  value={chatMode}
-                  onChange={(e) => handleModeChange(e.target.value as 'rag' | 'direct' | 'upload' | 'docs')}
-                  className="bg-white border border-gray-300 rounded-md px-3 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                >
-                  <option value="rag">RAG（文書検索）</option>
-                  <option value="direct">通常チャット</option>
-                  <option value="upload">📄 文書管理</option>
-                  <option value="docs">📚 一覧を見る</option>
-                </select>
+            <div className="flex items-center space-x-3">
+              {/* モデル切替トグル（左側） */}
+              <div className="flex items-center space-x-1 text-xs">
+                <span className="text-gray-500">モデル</span>
+                <div className="inline-flex rounded-md border border-gray-300 bg-white overflow-hidden">
+                  <button
+                    type="button"
+                    onClick={() => setModelType('gemini')}
+                    className={`px-2 py-1 ${
+                      modelType === 'gemini'
+                        ? 'bg-blue-500 text-white'
+                        : 'bg-white text-gray-700 hover:bg-gray-100'
+                    }`}
+                  >
+                    Gemini
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setModelType('ollama')}
+                    className={`px-2 py-1 border-l border-gray-300 ${
+                      modelType === 'ollama'
+                        ? 'bg-blue-500 text-white'
+                        : 'bg-white text-gray-700 hover:bg-gray-100'
+                    }`}
+                  >
+                    Gemma3
+                  </button>
+                </div>
+              </div>
+
+              {/* 既存のモードセレクタ */}
+              <div className="flex items-center space-x-1">
+                <span className="text-sm text-gray-600">モード:</span>
+                <div className="relative">
+                  <select
+                    value={chatMode}
+                    onChange={(e) => handleModeChange(e.target.value as 'rag' | 'direct' | 'upload' | 'docs')}
+                    className="bg-white border border-gray-300 rounded-md px-3 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  >
+                    <option value="rag">RAG（文書検索）</option>
+                    <option value="direct">通常チャット</option>
+                    <option value="upload">📄 文書管理</option>
+                    <option value="docs">📚 一覧を見る</option>
+                  </select>
+                </div>
               </div>
             </div>
           </div>
