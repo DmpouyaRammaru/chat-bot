@@ -295,8 +295,8 @@ export default function ChatInterface() {
             <form onSubmit={handleSubmit} className="fixed bottom-0 inset-x-0 z-30 bg-white border-t p-4">
               <div className="max-w-[100vw] px-2 sm:px-4 lg:px-6 mx-auto">
                 <div className="flex items-end space-x-2">
-                  {/* 画像プレビュー */}
-                  {images.length > 0 && (
+                  {/* 画像プレビュー（Gemini選択時のみ表示） */}
+                  {modelType === 'gemini' && images.length > 0 && (
                     <div className="flex space-x-2 max-w-[40vw] overflow-x-auto pr-2">
                       {images.map((img, idx) => (
                         <div key={idx} className="relative w-16 h-16 border rounded overflow-hidden">
@@ -328,37 +328,39 @@ export default function ChatInterface() {
                     className="flex-1 border border-gray-300 rounded-lg px-4 py-2 leading-6 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none max-h-40 overflow-y-auto"
                     disabled={isLoading}
                   />
-                  {/* 画像添付ボタン */}
-                  <label className="inline-flex items-center justify-center px-3 py-2 border border-gray-300 rounded-lg bg-white hover:bg-gray-50 cursor-pointer shrink-0">
-                    画像
-                    <input
-                      type="file"
-                      accept="image/*"
-                      multiple
-                      className="hidden"
-                      onChange={async (e) => {
-                        const files = Array.from(e.target.files || [])
-                        const newImages: Array<{ mimeType: string; data: string; url: string }> = []
-                        for (const file of files) {
-                          const base64 = await new Promise<string>((resolve, reject) => {
-                            const reader = new FileReader()
-                            reader.onload = () => {
-                              const result = reader.result as string
-                              const data = result.split(',')[1] || ''
-                              resolve(data)
-                            }
-                            reader.onerror = () => reject(reader.error)
-                            reader.readAsDataURL(file)
-                          })
-                          newImages.push({ mimeType: file.type, data: base64, url: URL.createObjectURL(file) })
-                        }
-                        setImages(prev => [...prev, ...newImages])
-                        // 入力欄にフォーカスを戻す
-                        const ta = document.querySelector('textarea') as HTMLTextAreaElement | null
-                        ta?.focus()
-                      }}
-                    />
-                  </label>
+                  {/* 画像添付ボタン（Gemini選択時のみ表示） */}
+                  {modelType === 'gemini' && (
+                    <label className="inline-flex items-center justify-center px-3 py-2 border border-gray-300 rounded-lg bg-white hover:bg-gray-50 cursor-pointer shrink-0">
+                      画像
+                      <input
+                        type="file"
+                        accept="image/*"
+                        multiple
+                        className="hidden"
+                        onChange={async (e) => {
+                          const files = Array.from(e.target.files || [])
+                          const newImages: Array<{ mimeType: string; data: string; url: string }> = []
+                          for (const file of files) {
+                            const base64 = await new Promise<string>((resolve, reject) => {
+                              const reader = new FileReader()
+                              reader.onload = () => {
+                                const result = reader.result as string
+                                const data = result.split(',')[1] || ''
+                                resolve(data)
+                              }
+                              reader.onerror = () => reject(reader.error)
+                              reader.readAsDataURL(file)
+                            })
+                            newImages.push({ mimeType: file.type, data: base64, url: URL.createObjectURL(file) })
+                          }
+                          setImages(prev => [...prev, ...newImages])
+                          // 入力欄にフォーカスを戻す
+                          const ta = document.querySelector('textarea') as HTMLTextAreaElement | null
+                          ta?.focus()
+                        }}
+                      />
+                    </label>
+                  )}
                   <button
                     type="submit"
                     disabled={isLoading || (!input.trim() && images.length === 0)}

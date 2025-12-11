@@ -5,16 +5,22 @@
 ## 主な機能
 - RAGモード: 社内文書を検索して回答を生成（pgvector/類似検索）
 - 通常チャット: 一般的な生成AIとして回答
+- モデル切替: Gemini（gemini-2.5-flash） / Gemma3（gemma3:4b, Ollama ローカル）
+  - Gemini: テキスト + 画像入力に対応
+  - Gemma3: テキストのみ対応（画像の添付および画像に関する質問はできません）
 - モード切替: rag / direct / upload / docs
 - 文書管理: テキスト文書のアップロード、一覧閲覧（モーダル表示）
-- マルチモーダル: 画像の添付と質問（Gemini 2.5 Flash）
+- マルチモーダル: 画像の添付と質問（Gemini 2.5 Flash, direct モード時のみ）
 
 ## 技術スタック
 - Web: Next.js 15 (App Router) / React 19 / TypeScript / Tailwind CSS 4
 - DB: Supabase (PostgreSQL + pgvector)
-- LLM: Google Gemini API
-  - 生成: `gemini-2.5-flash`
-  - 埋め込み: `text-embedding-004`
+- LLM:
+  - Google Gemini API
+    - 生成: `gemini-2.5-flash`
+    - 埋め込み: `text-embedding-004`
+  - Ollama（ローカル）
+    - 生成: `gemma3:4b`（OpenAI 互換エンドポイント経由）
 
 ## セットアップ
 ### 前提
